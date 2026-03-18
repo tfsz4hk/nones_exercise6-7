@@ -8,6 +8,7 @@ export default function Home() {
   const logout = () => {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("user");
+    // Optional: also sign out from Firebase if needed
     navigate("/login");
   };
 
@@ -19,7 +20,7 @@ export default function Home() {
           <ThemeToggle />
         </div>
         <h3 className="card-subtitle">
-          Welcome {user?.firstName} {user?.lastName}
+          Welcome {user?.firstName || ""} {user?.lastName || ""} {user?.email}
         </h3>
 
         <button className="btn btn-secondary" onClick={logout}>

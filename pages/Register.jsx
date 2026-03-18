@@ -1,5 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../src/firebase";
 import { ThemeToggle } from "../src/ThemeContext";
 
 export default function Register() {
@@ -13,15 +15,39 @@ export default function Register() {
   } = useForm();
 
   const onSubmit = (data) => {
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        email: data.email,
-        password: data.password
+    createUserWithEmailAndPassword(auth, data.email, data.password)
+      .then((result) => {
+        const user = result.user;
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            uid: user.uid,
+            email: user.email
+          })
+        );
+        navigate("/setup");
       })
-    );
+      .catch((error) => {
+        alert(error.message);
+      });
+  };
 
-    navigate("/setup");
+  const handleGoogleRegister = () => {
+    signInWithPopup(auth, googleProvider)
+      .then((result) => {
+        const user = result.user;
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            uid: user.uid,
+            email: user.email
+          })
+        );
+        navigate("/setup");
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
   };
 
   return (
@@ -99,6 +125,17 @@ export default function Register() {
             Register
           </button>
         </form>
+
+        <div style={{ marginTop: "12px" }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ width: "100%" }}
+            onClick={handleGoogleRegister}
+          >
+            Continue with Google
+          </button>
+        </div>
 
         <p className="card-footer-text">
           Already have an account?{" "}

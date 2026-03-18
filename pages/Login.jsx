@@ -1,5 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../src/firebase";
 import { ThemeToggle } from "../src/ThemeContext";
 
 export default function Login() {
@@ -12,18 +14,41 @@ export default function Login() {
   } = useForm();
 
   const onSubmit = (data) => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    signInWithEmailAndPassword(auth, data.email, data.password)
+      .then((result) => {
+        const user = result.user;
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            uid: user.uid,
+            email: user.email
+          })
+        );
+        localStorage.setItem("isLoggedIn", "true");
+        navigate("/home");
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  };
 
-    if (
-      storedUser &&
-      storedUser.email === data.email &&
-      storedUser.password === data.password
-    ) {
-      localStorage.setItem("isLoggedIn", "true");
-      navigate("/home");
-    } else {
-      alert("Invalid email or password");
-    }
+  const handleGoogleLogin = () => {
+    signInWithPopup(auth, googleProvider)
+      .then((result) => {
+        const user = result.user;
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            uid: user.uid,
+            email: user.email
+          })
+        );
+        localStorage.setItem("isLoggedIn", "true");
+        navigate("/home");
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
   };
 
   return (
@@ -79,6 +104,17 @@ export default function Login() {
             Login
           </button>
         </form>
+
+        <div style={{ marginTop: "12px" }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ width: "100%" }}
+            onClick={handleGoogleLogin}
+          >
+            Continue with Google
+          </button>
+        </div>
 
         <p className="card-footer-text">
           No account?{" "}
